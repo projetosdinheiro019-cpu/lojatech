@@ -1,27 +1,26 @@
-# NEXORA TECH — protótipo futurista
+# NEXORA TECH — loja futurista
 
 ## Incluído
-- Landing page responsiva em preto/neon.
-- Catálogo com busca, filtros por categoria e ordenação.
-- Modal de detalhes de produto.
-- Sacola com alteração de quantidades e total estimado.
-- Formulário de checkout demonstrativo.
-- Esqueleto de funções serverless para criação de pagamento e webhook.
+- Página responsiva preto/neon, catálogo, busca, filtros, ordenação e detalhes.
+- Sacola com quantidades e total visual.
+- Checkout ligado às rotas serverless `/api/create-payment` e `/api/payment-status`.
+- QR Code PIX/copia-e-cola quando o provedor retornar esses campos.
+- Chaves exclusivamente no backend.
 
-## Testar localmente
-Abra `index.html` no navegador. Catálogo, busca, detalhes e sacola funcionam sem servidor.
+## Atenção: integração PanteraPay
+O endpoint-base conhecido no projeto anterior é `https://panterapay-production.up.railway.app`; as rotas `/transactions` e `/transactions/:id` e os campos de resposta são pistas recuperadas do código anterior. **O formato exato de autenticação, corpo de criação e assinatura de webhook ainda precisa ser confirmado na documentação da conta.** Não coloque a loja em produção nem receba pagamentos reais antes de validar isso.
 
-## Antes de publicar
-Os preços, especificações e imagens atuais são ilustrativos. Confirme os dados reais dos fornecedores, substitua os símbolos por imagens autorizadas e configure contato, frete, estoque, políticas de privacidade, termos e trocas.
+### Configuração
+1. Importe o projeto para Vercel.
+2. Configure as variáveis do `.env.example` no painel da Vercel.
+3. `PANTERAPAY_CREATE_BODY_TEMPLATE` deve ser o JSON exato exigido pela API. Os placeholders suportados são `{amount}` (centavos), `{orderId}`, `{name}`, `{email}`, `{phone}` e `{document}`. Não use o exemplo estrutural sem confirmar o contrato oficial.
+4. `NEXORA_CATALOG_JSON` deve conter os IDs e preços confiáveis dos produtos, em reais. O backend recalcula o total com esse catálogo; não confia no total do navegador.
+5. Faça testes com valores pequenos no ambiente de teste, confira o retorno real e ajuste os campos da resposta se necessário.
 
-## Pagamentos
-O checkout **não cria cobranças reais**. O provedor é citado como Pantera Pay/Pantepay, mas a API exata, autenticação, payloads e assinatura do webhook precisam ser confirmados com a documentação da sua conta. Não invente endpoints e não exponha chaves no navegador.
+### Limitações que continuam bloqueadas
+- O webhook retorna indisponível até implementar a verificação oficial de assinatura e persistência de pedidos. Não marca pedidos como pagos com base apenas no payload recebido.
+- Os preços e especificações no catálogo visual são ilustrativos. Atualize frontend e catálogo seguro para refletirem os fornecedores reais.
+- A criação de cobrança pode retornar erro de resposta inesperada se o provedor usar outros nomes de campos. Consulte o painel da PanteraPay antes de repetir uma tentativa para evitar cobranças duplicadas.
 
-As funções em `api/` ficam bloqueadas até a implementação do adaptador oficial. Configure segredos apenas em variáveis de ambiente no servidor/Vercel. Em produção, o servidor deve recalcular os preços com dados confiáveis, registrar pedidos pendentes, usar idempotência, validar autenticidade do webhook e conferir valor/status no provedor antes de marcar como pago.
-
-## Deploy na Vercel
-1. Crie um repositório GitHub somente para este projeto.
-2. Envie os arquivos desta pasta para a raiz do repositório.
-3. Importe o repositório na Vercel.
-4. Adicione as variáveis do `.env.example` no painel da Vercel, quando tiver os dados oficiais.
-5. Configure domínio e teste primeiro em ambiente de teste.
+## Rodar localmente
+Como há funções `/api`, use Vercel CLI (`vercel dev`) ou faça deploy de preview. Abrir o HTML diretamente não executa as rotas serverless.
